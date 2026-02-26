@@ -1,4 +1,8 @@
-# Fanclub Web Board 🚀
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Faris4166/Simple-Checklist-Application-in-Python/refs/heads/main/BG.jpg" width="600" />
+</p>
+
+# TalkFan 🚀
 
 [TH] โปรเจกต์เว็บบอร์ด (Web Board) สำหรับการตั้งกระทู้ พูดคุย แสดงความคิดเห็น และแบ่งปันเรื่องราวต่างๆ ถูกออกแบบมาให้ใช้งานง่าย รวดเร็ว และมีหน้าตา (UI) ที่สวยงามทันสมัย
 [EN] A Web Board project for creating threads, discussing, commenting, and sharing stories. Designed to be easy to use, fast, and features a modern, beautiful UI.
@@ -66,3 +70,10 @@
    - Import the provided `database.sql` file to format your tables automatically.
 4. **Configuration (If needed)**: Check `config/db.php` to ensure your database credentials match your local setup.
 5. **Launch**: Open your web browser and navigate to `http://localhost/Fanclub`. You are ready to go!
+
+   ---
+
+<div align="center">
+  <img src = "https://safebooru.org//images/4142/04ed0afd739e7685e3a5b40d2d27e7ef.gif?6506570">
+</div>
+
