@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/db.php';
+require_once '../config/utils.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -9,6 +9,11 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['csrf_token'] ?? '';
+    if (!verify_csrf_token($token)) {
+        echo json_encode(['status' => 'error', 'message' => 'CSRF token validation failed']);
+        exit;
+    }
     $post_id = intval($_POST['post_id'] ?? 0);
     $user_id = $_SESSION['user_id'];
 

@@ -23,12 +23,16 @@ $posts_result = $stmt->get_result();
 $sql_suggested = "SELECT p.*, u.username, u.profile_img FROM posts p JOIN users u ON p.user_id = u.id WHERE p.status = 'published' ORDER BY RAND() LIMIT 3";
 $suggested_result = $conn->query($sql_suggested);
 
-// Community Stats
-$online_stmt = $conn->query("SELECT COUNT(*) as online_count FROM users WHERE last_active > (NOW() - INTERVAL 5 MINUTE)");
-$online_count = $online_stmt->fetch_assoc()['online_count'] ?? 0;
+// Community Stats (Optimized)
+$online_stmt = $conn->prepare("SELECT COUNT(*) as online_count FROM users WHERE last_active > (NOW() - INTERVAL 5 MINUTE)");
+$online_stmt->execute();
+$online_count = $online_stmt->get_result()->fetch_assoc()['online_count'] ?? 0;
+$online_stmt->close();
 
-$posts_count_stmt = $conn->query("SELECT COUNT(*) as total_posts FROM posts");
-$total_posts = $posts_count_stmt->fetch_assoc()['total_posts'] ?? 0;
+$posts_count_stmt = $conn->prepare("SELECT COUNT(*) as total_posts FROM posts");
+$posts_count_stmt->execute();
+$total_posts = $posts_count_stmt->get_result()->fetch_assoc()['total_posts'] ?? 0;
+$posts_count_stmt->close();
 ?>
 
 <div class="container mx-auto px-4 py-12 max-w-6xl">

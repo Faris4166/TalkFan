@@ -1,9 +1,14 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/db.php';
+require_once '../config/utils.php';
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['csrf_token'] ?? '';
+    if (!verify_csrf_token($token)) {
+        echo json_encode(['status' => 'error', 'message' => 'CSRF token validation failed']);
+        exit;
+    }
     if (!isset($_SESSION['user_id'])) {
         echo json_encode(['status' => 'error', 'message' => 'กรุณาเข้าสู่ระบบก่อนแสดงความคิดเห็น']);
         exit;

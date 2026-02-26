@@ -22,7 +22,10 @@ CREATE TABLE IF NOT EXISTS posts (
     image VARCHAR(255) DEFAULT NULL,
     status VARCHAR(20) DEFAULT 'published',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX (user_id),
+    INDEX (status),
+    INDEX (created_at)
 );
 
 -- Table for comments
@@ -35,5 +38,8 @@ CREATE TABLE IF NOT EXISTS comments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
+    FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE,
+    INDEX (post_id),
+    INDEX (user_id),
+    INDEX (parent_id)
 );

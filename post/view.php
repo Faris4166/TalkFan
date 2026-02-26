@@ -80,6 +80,7 @@ $comments_result = $c_stmt->get_result();
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <form id="commentForm" class="space-y-4">
                         <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                         <div class="flex items-center gap-4 mb-2">
                             <?php echo getAvatar($_SESSION['username'], $_SESSION['profile_img'] ?? 'default_profile.png', 'w-10 h-10'); ?>
                             <span class="font-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
@@ -248,6 +249,7 @@ $comments_result = $c_stmt->get_result();
 
         <form id="replyForm" class="p-8 space-y-6">
             <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
             <input type="hidden" name="parent_id" id="parent_id_input" value="">
 
             <div class="relative">
@@ -284,13 +286,7 @@ $comments_result = $c_stmt->get_result();
         $('#parent_id_input').val(parentId);
         $('#reply_to_name').text(username);
 
-        // Use PHP to generate avatar HTML for the modal via a small hack or AJAX
-        // Since we have the avatar logic in JS-friendly helper if needed, but let's do it simply:
-        $.get('/Fanclub/config/utils.php', { action: 'get_avatar_html', username: username, img: userImg }, function (html) {
-            // We'll actually just use a simple JS implementation for the modal avatar to avoid extra requests
-        });
-
-        // Simpler: Just put a placeholder or call a small helper
+        // Use a simple JS implementation for the modal avatar to avoid extra requests
         $('#reply_avatar_container').html(`<div class="avatar placeholder"><div class="bg-primary text-primary-content rounded-xl w-12"><span class="text-xl font-black">${username.charAt(0).toUpperCase()}</span></div></div>`);
 
         reply_modal.showModal();

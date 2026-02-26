@@ -65,7 +65,8 @@ $posts_result = $p_stmt->get_result();
                         <?php echo htmlspecialchars($user_info['username']); ?>
                     </h1>
                     <p class="text-xl opacity-40 font-bold font-outfit">
-                        <?php echo htmlspecialchars($user_info['email']); ?></p>
+                        <?php echo htmlspecialchars($user_info['email']); ?>
+                    </p>
 
                     <div class="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
                         <div
@@ -275,7 +276,10 @@ $posts_result = $p_stmt->get_result();
                 $.ajax({
                     url: '../post/delete_post',
                     type: 'POST',
-                    data: { post_id: postToDelete },
+                    data: {
+                        post_id: postToDelete,
+                        csrf_token: '<?php echo $csrf_token; ?>'
+                    },
                     success: function (response) {
                         location.reload();
                     },
