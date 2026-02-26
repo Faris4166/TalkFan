@@ -1,7 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/utils.php';
-session_start();
+require_once '../config/app_init.php';
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'กรุณาเข้าสู่ระบบก่อน']);

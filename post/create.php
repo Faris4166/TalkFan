@@ -16,6 +16,7 @@ if (!isset($_SESSION['user_id'])) {
     <div class="card bg-base-100 shadow-2xl border border-base-300 rounded-2xl overflow-hidden">
         <div class="card-body p-8 md:p-12">
             <form id="postForm" enctype="multipart/form-data" class="space-y-10">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <input type="hidden" name="status" id="postStatus" value="published">
                 <!-- Title -->
                 <div class="space-y-4">

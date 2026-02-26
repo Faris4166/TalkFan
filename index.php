@@ -1,11 +1,12 @@
 <?php
+require_once __DIR__ . '/config/app_init.php';
 $page_title = "Fanclub | Home";
-require_once 'config/db.php';
 include 'header.php';
 
 // Fetch posts with Search logic
 $search = trim($_GET['q'] ?? '');
-$sql = "SELECT p.*, u.username, u.profile_img FROM posts p JOIN users u ON p.user_id = u.id WHERE p.status = 'published'";
+$sql = "SELECT p.*, u.username, u.profile_img FROM posts p JOIN users u ON p.user_id = u.id WHERE p.status =
+'published'";
 if (!empty($search)) {
     $search_param = "%$search%";
     $sql .= " AND (p.title LIKE ? OR p.content LIKE ?)";
@@ -20,11 +21,16 @@ $stmt->execute();
 $posts_result = $stmt->get_result();
 
 // Fetch suggested posts (random, only published)
-$sql_suggested = "SELECT p.*, u.username, u.profile_img FROM posts p JOIN users u ON p.user_id = u.id WHERE p.status = 'published' ORDER BY RAND() LIMIT 3";
-$suggested_result = $conn->query($sql_suggested);
+$sql_suggested = "SELECT p.*, u.username, u.profile_img FROM posts p JOIN users u ON p.user_id = u.id WHERE p.status =
+'published' ORDER BY RAND() LIMIT 3";
+$suggest_stmt = $conn->prepare($sql_suggested);
+$suggest_stmt->execute();
+$suggested_result = $suggest_stmt->get_result();
+$suggest_stmt->close();
 
 // Community Stats (Optimized)
-$online_stmt = $conn->prepare("SELECT COUNT(*) as online_count FROM users WHERE last_active > (NOW() - INTERVAL 5 MINUTE)");
+$online_stmt = $conn->prepare("SELECT COUNT(*) as online_count FROM users WHERE last_active > (NOW() - INTERVAL 5
+MINUTE)");
 $online_stmt->execute();
 $online_count = $online_stmt->get_result()->fetch_assoc()['online_count'] ?? 0;
 $online_stmt->close();

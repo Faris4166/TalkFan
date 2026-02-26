@@ -1,7 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/utils.php';
-session_start();
+require_once '../config/app_init.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token = $_POST['csrf_token'] ?? '';

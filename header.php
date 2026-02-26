@@ -1,40 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once __DIR__ . '/config/db.php';
-require_once __DIR__ . '/config/utils.php';
-
-// Sync user data if logged in (Optimized: Sync every 10 mins or if forced)
-if (isset($_SESSION['user_id'])) {
-    $current_user_id = $_SESSION['user_id'];
-    $last_sync = $_SESSION['last_sync'] ?? 0;
-    $now = time();
-
-    // Update activity and sync data every 10 minutes to save resources
-    if ($now - $last_sync > 600) {
-        // Update last active timestamp
-        $upd_stmt = $conn->prepare("UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE id = ?");
-        $upd_stmt->bind_param("i", $current_user_id);
-        $upd_stmt->execute();
-        $upd_stmt->close();
-
-        $sync_stmt = $conn->prepare("SELECT username, email, profile_img FROM users WHERE id = ?");
-        $sync_stmt->bind_param("i", $current_user_id);
-        $sync_stmt->execute();
-        $sync_result = $sync_stmt->get_result();
-        if ($user_data = $sync_result->fetch_assoc()) {
-            $_SESSION['username'] = $user_data['username'];
-            $_SESSION['email'] = $user_data['email'];
-            $_SESSION['profile_img'] = $user_data['profile_img'];
-            $_SESSION['last_sync'] = $now;
-        }
-        $sync_stmt->close();
-    }
-}
-
-// Generate CSRF token for forms
-$csrf_token = get_csrf_token();
+require_once __DIR__ . '/config/app_init.php';
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">

@@ -1,9 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/db.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once '../config/app_init.php';
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'กรุณาเข้าสู่ระบบก่อน']);
@@ -11,6 +8,12 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['csrf_token'] ?? '';
+    if (!verify_csrf_token($token)) {
+        echo json_encode(['status' => 'error', 'message' => 'CSRF verification failed']);
+        exit;
+    }
+
     $user_id = $_SESSION['user_id'];
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -34,29 +37,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle Profile Image Upload
     $profile_img = $_SESSION['profile_img'] ?? 'default_profile.png';
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        // Validate image
+        $validation = validate_image_upload($_FILES['image']);
+        if (!$validation['valid']) {
+            echo json_encode(['status' => 'error', 'message' => $validation['error']]);
+            exit;
+        }
+
         $upload_dir = '../asset/avatar/';
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
         $file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-        $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
+        $new_image_name = 'user_' . $user_id . '_' . time() . '.' . $file_ext;
+        $target_file = $upload_dir . $new_image_name;
 
-        if (in_array($file_ext, $allowed_exts)) {
-            $new_image_name = 'user_' . $user_id . '_' . time() . '.' . $file_ext;
-            $target_file = $upload_dir . $new_image_name;
-
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
-                // Delete old profile image if it's not the default one
-                if ($profile_img !== 'default_profile.png' && file_exists($upload_dir . $profile_img)) {
-                    unlink($upload_dir . $profile_img);
-                }
-                $profile_img = $new_image_name;
-            } else {
-                echo json_encode(['status' => 'error', 'message' => 'ไม่สามารถอัปโหลดรูปภาพได้']);
-                exit;
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+            // Delete old profile image if it's not the default one
+            if ($profile_img !== 'default_profile.png' && file_exists($upload_dir . $profile_img)) {
+                unlink($upload_dir . $profile_img);
             }
+            $profile_img = $new_image_name;
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'ไฟล์ที่อัปโหลดต้องเป็นรูปภาพเท่านั้น (jpg, png, gif)']);
+            echo json_encode(['status' => 'error', 'message' => 'ไม่สามารถอัปโหลดรูปภาพได้']);
             exit;
         }
     }

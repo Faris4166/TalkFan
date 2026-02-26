@@ -19,6 +19,7 @@ include '../header.php';
             </div>
 
             <form id="loginForm" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <div class="form-control">
                     <label class="label"><span
                             class="label-text font-bold opacity-70">อีเมลหรือชื่อผู้ใช้</span></label>
@@ -59,7 +60,6 @@ include '../header.php';
                 </div>
             </form>
 
-            <div class="divider my-10 opacity-30 text-xs font-bold uppercase tracking-widest">หรือ</div>
 
             <p class="text-center font-medium">
                 ยังไม่มีบัญชีใช่ไหม?

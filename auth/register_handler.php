@@ -1,8 +1,13 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/db.php';
+require_once '../config/app_init.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['csrf_token'] ?? '';
+    if (!verify_csrf_token($token)) {
+        echo json_encode(['status' => 'error', 'message' => 'CSRF verification failed']);
+        exit;
+    }
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';

@@ -69,6 +69,38 @@ function verify_csrf_token($token)
 {
     if (session_status() === PHP_SESSION_NONE)
         session_start();
-    return !empty($token) && hash_equals($_SESSION['csrf_token'], $token);
+    return !empty($token) && hash_equals($_SESSION['csrf_token'] ?? '', $token);
+}
+
+/**
+ * Validates an uploaded image for security.
+ * @param array $file The element from $_FILES
+ * @param int $max_size Max size in bytes (default 5MB)
+ * @return array ['valid' => bool, 'error' => string|null]
+ */
+function validate_image_upload($file, $max_size = 5242880)
+{
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return ['valid' => false, 'error' => 'Upload error code: ' . $file['error']];
+    }
+
+    if ($file['size'] > $max_size) {
+        return ['valid' => false, 'error' => 'File size exceeds limit (5MB)'];
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']);
+    $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    if (!in_array($mime, $allowed_mimes)) {
+        return ['valid' => false, 'error' => 'Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.'];
+    }
+
+    // Secondary check: ensure it's actually an image
+    if (!getimagesize($file['tmp_name'])) {
+        return ['valid' => false, 'error' => 'Uploaded file is not a valid image content.'];
+    }
+
+    return ['valid' => true, 'error' => null];
 }
 ?>

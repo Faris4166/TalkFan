@@ -16,6 +16,7 @@ if (!isset($_SESSION['user_id'])) {
     <div class="card bg-base-100 shadow-xl border border-base-200 rounded-2xl overflow-hidden">
         <div class="card-body p-8 md:p-12">
             <form id="settingsForm" enctype="multipart/form-data" class="space-y-10">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <!-- Avatar Section -->
                 <div class="flex flex-col items-center gap-6 pb-10 border-b border-base-200">
                     <div class="avatar">

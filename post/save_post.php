@@ -1,7 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/db.php';
-session_start();
+require_once '../config/app_init.php';
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'กรุณาเข้าสู่ระบบก่อน']);
@@ -9,6 +8,12 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['csrf_token'] ?? '';
+    if (!verify_csrf_token($token)) {
+        echo json_encode(['status' => 'error', 'message' => 'CSRF verification failed']);
+        exit;
+    }
+
     $title = trim($_POST['title'] ?? '');
     $content = trim($_POST['content'] ?? '');
     $user_id = $_SESSION['user_id'];
@@ -22,6 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Handle Image Upload
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $validation = validate_image_upload($_FILES['image']);
+        if (!$validation['valid']) {
+            echo json_encode(['status' => 'error', 'message' => $validation['error']]);
+            exit;
+        }
+
         $upload_dir = '../asset/post/';
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0777, true);

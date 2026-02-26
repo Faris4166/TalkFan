@@ -1,9 +1,13 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/db.php';
-session_start();
+require_once '../config/app_init.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['csrf_token'] ?? '';
+    if (!verify_csrf_token($token)) {
+        echo json_encode(['status' => 'error', 'message' => 'CSRF verification failed']);
+        exit;
+    }
     $username = trim($_POST['username'] ?? ''); // Can be email or username based on login.php label
     $password = $_POST['password'] ?? '';
 
@@ -21,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
         if (password_verify($password, $user['password'])) {
+            session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['profile_img'] = $user['profile_img'];
