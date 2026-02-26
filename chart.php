@@ -9,9 +9,9 @@
     <title>Fanclub Chart</title>
 </head>
 
-<body class="m-2 p-2">
+<body>
     <!-- จัดการแสดงผลของกราฟในหน้านี้ -->
-    <div class="flex flex-col justify-start items-start gap-4">
+    <div class="flex flex-col justify-start items-start gap-4 m-2 p-2">
 
         <!-- เจ้าของกระทู้ -->
         <div class="flex flex-col justify-center items-start gap-4">
