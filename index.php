@@ -12,6 +12,15 @@
     <!-- include Navbar มา -->
     <?php include 'components/navbar.php'; ?>
     <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="card-actions justify-end">
+            <a href="../Fanclub/account/edit">
+                <button class="btn btn-primary px-8">
+                    <p class="text-white">
+                        สร้างกระทู้ใหม่
+                    </p>
+                </button>
+            </a>
+        </div>
         <!-- หัวข้อกระทู้ -->
         <header class="text-center mb-10">
             <h1 class="text-4xl font-extrabold text-primary mb-2">Welcome to Fanclub</h1>
