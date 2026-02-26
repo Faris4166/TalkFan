@@ -9,6 +9,8 @@ if (!$id) {
     exit;
 }
 
+// [EN] Fetch post details including the author's username and profile image
+// [TH] ดึงข้อมูลกระทู้ พร้อมกับชื่อและรูปโปรไฟล์ผู้แต่งจากตาราง users
 // Fetch post with user info
 $stmt = $conn->prepare("SELECT p.*, u.username, u.profile_img FROM posts p JOIN users u ON p.user_id = u.id WHERE p.id = ?");
 $stmt->bind_param("i", $id);
@@ -21,6 +23,8 @@ if (!$post) {
     exit;
 }
 
+// [EN] Fetch all comments for this post, ordered by oldest first
+// [TH] ดึงข้อมูลยอดคอมเมนต์ทั้งหมดของกระทู้นี้ เรียงตามเวลาเก่าไปใหม่
 // Fetch comments
 $c_stmt = $conn->prepare("SELECT c.*, u.username, u.profile_img FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? ORDER BY c.created_at ASC");
 $c_stmt->bind_param("i", $id);
@@ -68,12 +72,16 @@ $comments_result = $c_stmt->get_result();
     </article>
 
     <!-- Comments Section -->
+    <!-- [EN] Area handling comments functionality -->
+    <!-- [TH] พื้นที่สำหรับจัดการและแสดงความคิดเห็นทั้งหมด -->
     <section class="space-y-8">
         <div class="flex items-center gap-3">
             <span class="w-2 h-8 bg-primary rounded-full"></span>
             <h2 class="text-3xl font-black font-outfit">ความคิดเห็น (<?php echo $comments_result->num_rows; ?>)</h2>
         </div>
 
+        <!-- [EN] Comment Input Form -->
+        <!-- [TH] ฟอร์มสำหรับกรอกข้อความคอมเมนต์ -->
         <!-- Comment Form -->
         <div class="card bg-base-100 shadow-xl border border-base-300 rounded-3xl overflow-hidden">
             <div class="card-body p-8">
@@ -108,6 +116,8 @@ $comments_result = $c_stmt->get_result();
             </div>
         </div>
 
+        <!-- [EN] Comments Thread List -->
+        <!-- [TH] ส่วนแสดงรายการคอมเมนต์แบบ Thread (ลูกโซ่) -->
         <!-- Comments List -->
         <div class="space-y-6" id="comments-list">
             <?php
@@ -117,8 +127,12 @@ $comments_result = $c_stmt->get_result();
                     $comments[] = $c;
                 }
 
+                // [EN] Recursive function to dynamically generate nested comments
+                // [TH] ฟังก์ชันสำหรับเรนเดอร์คอมเมนต์แบบเรียกซ้ำ เพื่อง่ายต่อการแสดงคอมเมนต์ซ้อนทับกัน (Nested)
                 function renderComment($comment, $all_comments, $depth = 0, $parent_username = null)
                 {
+                    // [EN] Visual indentation for nested replies
+                    // [TH] เพิ่มระยะขอบด้านซ้าย หากเป็นคอมเมนต์ตอบกลับ (ย่อหน้าให้เห็นชัดเจนขึ้น)
                     $margin = $depth > 0 ? 'ml-6 md:ml-12 border-l-2 border-base-300/50 pl-4 md:pl-8' : '';
 
                     // Count children
@@ -229,6 +243,8 @@ $comments_result = $c_stmt->get_result();
     </section>
 </div>
 
+<!-- [EN] Reply Modal Box (Hidden until triggered) -->
+<!-- [TH] ป๊อปอัปให้ผู้ใช้กรอกข้อความเมื่อจะกดตอบกลับ (จะซ่อนไว้จนกว่าผู้ใช้จะกด) -->
 <!-- Reply Modal Form (Hidden) -->
 <dialog id="reply_modal" class="modal">
     <div class="modal-box rounded-3xl p-0 overflow-hidden max-w-lg border border-base-300 shadow-2xl">
@@ -278,6 +294,8 @@ $comments_result = $c_stmt->get_result();
 </dialog>
 
 <script>
+    // [EN] Function to trigger reply modal with parent info
+    // [TH] ฟังก์ชันเรียกขึ้นป๊อปอัปสำหรับตอบกลับ โดยรับค่าจากคนต้นทางมา
     function showReplyForm(parentId, username, userImg) {
         <?php if (!isset($_SESSION['user_id'])): ?>
             window.location.href = '/Fanclub/auth/login';
@@ -286,6 +304,8 @@ $comments_result = $c_stmt->get_result();
         $('#parent_id_input').val(parentId);
         $('#reply_to_name').text(username);
 
+        // [EN] Basic placeholder avatar generation to avoid additional API hit
+        // [TH] ใช้ Javascript สร้างอวาตาร์ตัวอักษรเพื่อลดการใช้งาน API ให้หน้าเว็บโหลดเร็ว
         // Use a simple JS implementation for the modal avatar to avoid extra requests
         $('#reply_avatar_container').html(`<div class="avatar placeholder"><div class="bg-primary text-primary-content rounded-xl w-12"><span class="text-xl font-black">${username.charAt(0).toUpperCase()}</span></div></div>`);
 
@@ -318,6 +338,8 @@ $comments_result = $c_stmt->get_result();
     }
 
     $(document).ready(function () {
+        // [EN] Universal AJAX submission logic for both basic comments and threaded replies
+        // [TH] กลไกส่งความคิดเห็นผ่าน AJAX รองรับทั้งคอมเมนต์หลัก และการตอบกลับใน Thread
         $('#commentForm, #replyForm').on('submit', function (e) {
             e.preventDefault();
             const form = $(this);

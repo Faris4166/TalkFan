@@ -1,13 +1,19 @@
 <?php
+// [EN] Set page title and require DB/Header
+// [TH] กำหนดชื่อหน้าเว็บและดึงไฟล์เชื่อมฐานข้อมูลและส่วนหัว
 $page_title = "Edit Post | Fanclub";
 require_once '../config/db.php';
 include '../header.php';
 
+// [EN] Check if user is logged in
+// [TH] ตรวจสอบสิทธิ์การเข้าใช้งาน
 if (!isset($_SESSION['user_id'])) {
     header('Location: /Fanclub/auth/login');
     exit;
 }
 
+// [EN] Fetch post details owned by the current user
+// [TH] ดึงข้อมูลกระทู้ที่ตรงกับรหัสกระทู้และต้องเป็นของผู้ใช้นี้เท่านั้น
 $post_id = intval($_GET['id'] ?? 0);
 $user_id = $_SESSION['user_id'];
 
@@ -16,11 +22,15 @@ $stmt->bind_param("ii", $post_id, $user_id);
 $stmt->execute();
 $post = $stmt->get_result()->fetch_assoc();
 
+// [EN] Redirect if post not found or unauthorized
+// [TH] หากไม่พบกระทู้หรือไม่มีสิทธิ์ ให้กลับไปที่หน้ากระทู้ของฉัน
 if (!$post) {
     header('Location: ../user/my_posts');
     exit;
 }
 
+// [EN] Validation: Only allow edits within 1 hour limit (3600 seconds)
+// [TH] ตรวจสอบเงื่อนไข: อนุญาตให้แก้ไขได้เฉพาะภายใน 1 ชั่วโมงหลังจากสร้างกระทู้เท่านั้น
 // Check if editable (1 hour)
 $created_at = strtotime($post['created_at']);
 $current_time = time();
@@ -42,6 +52,8 @@ if (!$is_editable) {
 
     <div class="card bg-base-100 shadow-2xl border border-base-300 rounded-2xl overflow-hidden">
         <div class="card-body p-8 md:p-12">
+            <!-- [EN] Edit form pre-filled with post data -->
+            <!-- [TH] ฟอร์มแก้ไขกระทู้ จะแสดงข้อมูลเดิมขึ้นมาให้แก้ไข -->
             <form id="editForm" enctype="multipart/form-data" class="space-y-10">
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
@@ -133,6 +145,8 @@ if (!$is_editable) {
 
 <script>
     $(document).ready(function () {
+        // [EN] AJAX function for sending edit data
+        // [TH] ฟังก์ชัน JavaScript ส่งข้อมูลแก้ไขผ่าน AJAX ไปหา API ของ update_post
         function updatePost(status) {
             $('#postStatus').val(status);
             loading_modal.showModal();

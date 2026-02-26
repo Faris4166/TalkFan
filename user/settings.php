@@ -1,4 +1,6 @@
 <?php
+// [EN] Settings page setup with authentication
+// [TH] กำหนดชื่อเว็บและตรวจสอบการเข้าสู่ระบบก่อนอนุญาตให้เข้าหน้าตั้งค่า
 $page_title = "Account Settings | Fanclub";
 include '../header.php';
 if (!isset($_SESSION['user_id'])) {
@@ -15,9 +17,14 @@ if (!isset($_SESSION['user_id'])) {
 
     <div class="card bg-base-100 shadow-xl border border-base-200 rounded-2xl overflow-hidden">
         <div class="card-body p-8 md:p-12">
+            <!-- [EN] Settings form allowing file uploads (enctype="multipart/form-data") -->
+            <!-- [TH] ฟอร์มตั้งค่าโปรไฟล์ รองรับการอัปโหลดไฟล์รูปภาพ -->
             <form id="settingsForm" enctype="multipart/form-data" class="space-y-10">
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+
                 <!-- Avatar Section -->
+                <!-- [EN] Displays current profile image and allows selecting a new one -->
+                <!-- [TH] แสดงรูปโปรไฟล์ปัจจุบัน และปุ่มสำหรับเลือกรูปใหม่ -->
                 <div class="flex flex-col items-center gap-6 pb-10 border-b border-base-200">
                     <div class="avatar">
                         <div
@@ -111,6 +118,8 @@ if (!isset($_SESSION['user_id'])) {
 
 <script>
     $(document).ready(function () {
+        // [EN] Preview local image instantly after user selects a file
+        // [TH] พรีวิวรูปภาพโปรไฟล์ใหม่ทันทีเมื่อผู้ใช้เลือกไฟล์ (ยังไม่ถูกอัปโหลดขึ้นเซิร์ฟเวอร์)
         $('#imageInput').on('change', function () {
             const file = this.files[0];
             if (file) {
@@ -120,6 +129,8 @@ if (!isset($_SESSION['user_id'])) {
             }
         });
 
+        // [EN] Handle form submission securely via AJAX using FormData
+        // [TH] ส่งข้อมูลการแก้เซตติ้ง พร้อมไฟล์รูปภาพผ่าน AJAX โดยไม่ใช้การรีโหลดหน้าเว็บ
         $('#btnSubmit').on('click', function () {
             confirm_modal.close();
             let formData = new FormData($('#settingsForm')[0]);

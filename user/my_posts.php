@@ -1,8 +1,12 @@
 <?php
+// [EN] Set page title, include DB connection and header
+// [TH] กำหนดชื่อหน้าเว็บ ดึงไฟล์เชื่อมต่อฐานข้อมูลและส่วนหัวของเว็บ
 $page_title = "My Posts | Fanclub";
 require_once '../config/db.php';
 include '../header.php';
 
+// [EN] Require authentication
+// [TH] ตรวจสอบสิทธิ์ว่าผู้ใช้ล็อกอินหรือยัง
 if (!isset($_SESSION['user_id'])) {
     header('Location: /Fanclub/auth/login');
     exit;
@@ -10,12 +14,16 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// [EN] Fetch user info and their total post count
+// [TH] ดึงข้อมูลส่วนตัวของผู้ใช้ และนับจำนวนกระทู้ทั้งหมดที่เคยตั้ง
 // Get user info and post count
 $stmt = $conn->prepare("SELECT username, email, profile_img, (SELECT COUNT(*) FROM posts WHERE user_id = ?) as post_count FROM users WHERE id = ?");
 $stmt->bind_param("ii", $user_id, $user_id);
 $stmt->execute();
 $user_info = $stmt->get_result()->fetch_assoc();
 
+// [EN] Fetch user posts based on selected tab ('all' or 'drafts')
+// [TH] ดึงกระทู้ของผู้ใช้ตามหมวดหมู่แท็บที่เลือก (ส่งต่อค่าทั้งหมด หรือเฉพาะแบบร่าง)
 // Get user posts
 $tab = $_GET['tab'] ?? 'all';
 $sql_posts = "SELECT * FROM posts WHERE user_id = ?";
@@ -114,6 +122,8 @@ $posts_result = $p_stmt->get_result();
             </div>
         </div>
 
+        <!-- [EN] Posts feed logic & skeleton UI initially visible -->
+        <!-- [TH] พื้นที่แสดงรายการกระทู้ และโครงสร้างโหลดข้อมูลหลอก ๆ (Skeleton) ก่อนข้อมูลจริงมา -->
         <div id="posts-container" class="relative">
             <!-- Global Loading Spinner (Initial) -->
             <div id="loading-overlay"
@@ -265,12 +275,16 @@ $posts_result = $p_stmt->get_result();
 <script>
     let postToDelete = null;
 
+    // [EN] Show delete confirmation modal
+    // [TH] แสดงหน้าต่างยืนยันการลบกระทู้
     function confirmDelete(id) {
         postToDelete = id;
         delete_modal.showModal();
     }
 
     $(document).ready(function () {
+        // [EN] Handle post deletion via AJAX to prevent full page reload initially
+        // [TH] เมื่อกดยืนยันลบ ให้ส่งคำสั่งผ่าน AJAX เพื่อลบกระทู้เบื้องหลัง
         $('#btnConfirmDelete').on('click', function () {
             if (postToDelete) {
                 $.ajax({
@@ -290,6 +304,8 @@ $posts_result = $p_stmt->get_result();
             }
         });
 
+        // [EN] Add skeleton loading effect before rendering posts for better UX
+        // [TH] ช่วยให้หน้าเว็บดูสมูทขึ้นโดยการแสดงโครงร่าง (Skeleton) และซ่อนเมื่อโหลดข้อมูลเสร็จ
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.getElementById('loading-overlay').style.opacity = '0';

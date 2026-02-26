@@ -1,6 +1,11 @@
 <?php
+// [EN] Set page title and include header
+// [TH] กำหนดชื่อหน้าเว็บและนำเข้าส่วนหัว
 $page_title = "Create New Post | Fanclub";
 include '../header.php';
+
+// [EN] Redirect to login if user is not authenticated
+// [TH] ถ้ายังไม่เข้าสู่ระบบ ให้บังคับกลับไปหน้าล็อกอิน
 if (!isset($_SESSION['user_id'])) {
     header('Location: /Fanclub/auth/login');
     exit;
@@ -15,9 +20,14 @@ if (!isset($_SESSION['user_id'])) {
 
     <div class="card bg-base-100 shadow-2xl border border-base-300 rounded-2xl overflow-hidden">
         <div class="card-body p-8 md:p-12">
+            <!-- [EN] Post creation form with multipart config for file upload -->
+            <!-- [TH] ฟอร์มสร้างกระทู้ รองรับการอัปโหลดไฟล์รูปภาพ -->
             <form id="postForm" enctype="multipart/form-data" class="space-y-10">
+                <!-- [EN] CSRF token for security and hidden status field -->
+                <!-- [TH] โทเคน CSRF ป้องกันการโจมตี และฟิลด์ซ่อนสำหรับสถานะกระทู้ -->
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <input type="hidden" name="status" id="postStatus" value="published">
+
                 <!-- Title -->
                 <div class="space-y-4">
                     <label
@@ -68,6 +78,8 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
                 </div>
 
+                <!-- [EN] Submit buttons (Draft or Publish) -->
+                <!-- [TH] ปุ่มกดยืนยัน (บันทึกร่าง หรือ เผยแพร่ทันที) -->
                 <div class="flex flex-col sm:flex-row justify-end gap-4 pt-8 border-t border-base-200">
                     <button type="button" id="btnDraft"
                         class="btn btn-ghost px-10 h-16 rounded-2xl text-xl font-bold border border-base-300">
@@ -84,6 +96,8 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 </div>
 
+<!-- [EN] Confirmation Modal before publishing -->
+<!-- [TH] ป๊อปอัปให้ผู้ใช้ยืนยันก่อนกดยืนยันเผยแพร่ -->
 <dialog id="confirm_modal" class="modal">
     <div class="modal-box rounded-2xl p-10">
         <h3 class="font-black text-3xl font-outfit mb-4">พร้อมแชร์หรือยัง?</h3>
@@ -145,6 +159,8 @@ if (!isset($_SESSION['user_id'])) {
                     }, 1500);
                 },
                 error: function () {
+                    // [EN] Update modal content on request failure
+                    // [TH] แจ้งเตือนผู้ใช้เมื่อมีข้อผิดพลาดในการเชื่อมต่อ
                     $('#modal_status_content').html(`
                         <h3 class="font-black text-3xl text-error font-outfit">เกิดข้อผิดพลาด!</h3>
                         <p class="py-6 text-lg font-medium opacity-60">ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ในขณะนี้</p>
@@ -160,6 +176,8 @@ if (!isset($_SESSION['user_id'])) {
             submitPost('draft');
         });
 
+        // [EN] Action: Publish directly
+        // [TH] เมื่อกดยืนยันเผยแพร่ ให้เปลี่ยนสถานะเป็น published และส่งข้อมูลทำงาน
         $('#btnConfirmSubmit').on('click', function () {
             confirm_modal.close();
             submitPost('published');
