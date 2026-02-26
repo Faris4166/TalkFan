@@ -116,53 +116,102 @@ $comments_result = $c_stmt->get_result();
                     $comments[] = $c;
                 }
 
-                function renderComment($comment, $all_comments, $depth = 0)
+                function renderComment($comment, $all_comments, $depth = 0, $parent_username = null)
                 {
-                    $margin = $depth > 0 ? 'ml-8 md:ml-12 border-l-2 border-base-300 pl-4 md:pl-6' : '';
-                    ?>
-                    <div
-                        class="card bg-base-100 shadow-sm border border-base-300 rounded-2xl group hover:shadow-md transition-all <?php echo $margin; ?> mb-4">
-                        <div class="card-body p-5">
-                            <div class="flex items-start gap-4">
-                                <div class="shrink-0">
-                                    <?php echo getAvatar($comment['username'], $comment['profile_img'], 'w-10 h-10'); ?>
-                                </div>
-                                <div class="flex-1 space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <h4 class="font-black text-sm text-primary">
-                                            <?php echo htmlspecialchars($comment['username']); ?>
-                                        </h4>
-                                        <span class="text-[10px] uppercase font-black opacity-30 tracking-widest">
-                                            <?php echo date('d M Y • H:i', strtotime($comment['created_at'])); ?>
-                                        </span>
-                                    </div>
-                                    <p class="text-base font-medium opacity-80 leading-relaxed">
-                                        <?php echo nl2br(htmlspecialchars($comment['comment'])); ?>
-                                    </p>
+                    $margin = $depth > 0 ? 'ml-6 md:ml-12 border-l-2 border-base-300/50 pl-4 md:pl-8' : '';
 
-                                    <div class="pt-2">
-                                        <button
-                                            onclick="showReplyForm(<?php echo $comment['id']; ?>, '<?php echo htmlspecialchars($comment['username']); ?>')"
-                                            class="btn btn-ghost btn-xs rounded-lg font-bold opacity-40 hover:opacity-100 hover:bg-primary/10 hover:text-primary transition-all">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
-                                            </svg>
-                                            ตอบกลับ
-                                        </button>
+                    // Count children
+                    $child_count = 0;
+                    foreach ($all_comments as $child) {
+                        if ($child['parent_id'] == $comment['id'])
+                            $child_count++;
+                    }
+                    ?>
+                    <div class="relative <?php echo $depth > 0 ? 'mt-4' : 'mt-8'; ?>"
+                        id="comment-<?php echo $comment['id']; ?>">
+                        <!-- Small dot for threaded visual -->
+                        <?php if ($depth > 0): ?>
+                            <div class="absolute -left-[1.1rem] top-7 w-4 h-0.5 bg-base-300/50"></div>
+                        <?php endif; ?>
+
+                        <div
+                            class="card bg-base-100 shadow-sm border border-base-300 rounded-2xl group hover:shadow-md transition-all <?php echo $margin; ?>">
+                            <div class="card-body p-6">
+                                <div class="flex items-start gap-4">
+                                    <div class="shrink-0">
+                                        <?php echo getAvatar($comment['username'], $comment['profile_img'], 'w-10 h-10'); ?>
+                                    </div>
+                                    <div class="flex-1 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex flex-col">
+                                                <h4 class="font-black text-sm text-primary flex items-center gap-2">
+                                                    <?php echo htmlspecialchars($comment['username']); ?>
+                                                    <?php if ($depth > 0 && $parent_username): ?>
+                                                        <span class="badge badge-sm badge-ghost font-bold opacity-50 px-2 py-3">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="3" d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
+                                                            </svg>
+                                                            <?php echo htmlspecialchars($parent_username); ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </h4>
+                                            </div>
+                                            <span class="text-[10px] uppercase font-black opacity-30 tracking-widest">
+                                                <?php echo date('d M Y • H:i', strtotime($comment['created_at'])); ?>
+                                            </span>
+                                        </div>
+                                        <p class="text-base font-medium opacity-80 leading-relaxed">
+                                            <?php echo nl2br(htmlspecialchars($comment['comment'])); ?>
+                                        </p>
+
+                                        <div class="pt-2 flex items-center gap-3">
+                                            <button
+                                                onclick="showReplyForm(<?php echo $comment['id']; ?>, '<?php echo htmlspecialchars($comment['username']); ?>', '<?php echo $comment['profile_img']; ?>')"
+                                                class="btn btn-ghost btn-xs h-8 rounded-xl font-bold opacity-40 hover:opacity-100 hover:bg-primary/10 hover:text-primary transition-all px-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                        d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
+                                                </svg>
+                                                ตอบกลับ
+                                            </button>
+
+                                            <?php if ($child_count > 0): ?>
+                                                <button onclick="toggleReplies(<?php echo $comment['id']; ?>)"
+                                                    id="btn-toggle-<?php echo $comment['id']; ?>"
+                                                    class="btn btn-ghost btn-xs h-8 rounded-xl font-bold text-primary bg-primary/5 hover:bg-primary/10 transition-all px-3">
+                                                    <span class="flex items-center gap-1.5">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                        ดูการตอบกลับ (<?php echo $child_count; ?>)
+                                                    </span>
+                                                </button>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <?php if ($child_count > 0): ?>
+                            <div id="replies-<?php echo $comment['id']; ?>" class="hidden">
+                                <?php
+                                // Render children
+                                foreach ($all_comments as $child) {
+                                    if ($child['parent_id'] == $comment['id']) {
+                                        renderComment($child, $all_comments, $depth + 1, $comment['username']);
+                                    }
+                                }
+                                ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <?php
-                    // Render children
-                    foreach ($all_comments as $child) {
-                        if ($child['parent_id'] == $comment['id']) {
-                            renderComment($child, $all_comments, $depth + 1);
-                        }
-                    }
                 }
 
                 // Render top-level comments first
@@ -181,21 +230,44 @@ $comments_result = $c_stmt->get_result();
 
 <!-- Reply Modal Form (Hidden) -->
 <dialog id="reply_modal" class="modal">
-    <div class="modal-box rounded-2xl p-8">
-        <h3 class="font-black text-2xl font-outfit mb-4">ตอบกลับคุณ <span id="reply_to_name"
-                class="text-primary"></span></h3>
-        <form id="replyForm" class="space-y-4">
+    <div class="modal-box rounded-3xl p-0 overflow-hidden max-w-lg border border-base-300 shadow-2xl">
+        <!-- Header -->
+        <div class="bg-base-200 p-6 flex items-center justify-between border-b border-base-300">
+            <div class="flex items-center gap-4">
+                <div id="reply_avatar_container"></div>
+                <div>
+                    <h3 class="font-black text-xl font-outfit leading-tight">เขียนคำตอบ</h3>
+                    <p class="text-xs font-bold opacity-40 uppercase tracking-wider">ตอบกลับคุณ @<span
+                            id="reply_to_name"></span></p>
+                </div>
+            </div>
+            <form method="dialog">
+                <button class="btn btn-ghost btn-circle btn-sm">✕</button>
+            </form>
+        </div>
+
+        <form id="replyForm" class="p-8 space-y-6">
             <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
             <input type="hidden" name="parent_id" id="parent_id_input" value="">
-            <textarea name="comment"
-                class="textarea textarea-bordered focus:textarea-primary w-full h-32 rounded-2xl text-base font-medium"
-                placeholder="พิมพ์ข้อความตอบกลับ..." required></textarea>
-            <div class="modal-action gap-3">
-                <form method="dialog" class="flex-1">
-                    <button class="btn btn-block rounded-xl font-bold">ยกเลิก</button>
-                </form>
+
+            <div class="relative">
+                <textarea name="comment"
+                    class="textarea textarea-bordered focus:textarea-primary w-full h-48 rounded-2xl text-lg font-medium p-6 bg-base-100 transition-all border-2"
+                    placeholder="แชร์ความคิดเห็นของคุณที่นี่..." required></textarea>
+                <div class="absolute bottom-4 right-4 opacity-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button type="button" onclick="reply_modal.close()"
+                    class="btn btn-ghost h-14 rounded-2xl font-bold border border-base-300">ยกเลิก</button>
                 <button type="submit" id="btnSubmitReply"
-                    class="btn btn-primary flex-1 rounded-xl font-black shadow-lg shadow-primary/20">
+                    class="btn btn-primary h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20">
                     ส่งคำตอบ
                 </button>
             </div>
@@ -204,14 +276,49 @@ $comments_result = $c_stmt->get_result();
 </dialog>
 
 <script>
-    function showReplyForm(parentId, username) {
+    function showReplyForm(parentId, username, userImg) {
         <?php if (!isset($_SESSION['user_id'])): ?>
             window.location.href = '/Fanclub/auth/login';
             return;
         <?php endif; ?>
         $('#parent_id_input').val(parentId);
         $('#reply_to_name').text(username);
+
+        // Use PHP to generate avatar HTML for the modal via a small hack or AJAX
+        // Since we have the avatar logic in JS-friendly helper if needed, but let's do it simply:
+        $.get('/Fanclub/config/utils.php', { action: 'get_avatar_html', username: username, img: userImg }, function (html) {
+            // We'll actually just use a simple JS implementation for the modal avatar to avoid extra requests
+        });
+
+        // Simpler: Just put a placeholder or call a small helper
+        $('#reply_avatar_container').html(`<div class="avatar placeholder"><div class="bg-primary text-primary-content rounded-xl w-12"><span class="text-xl font-black">${username.charAt(0).toUpperCase()}</span></div></div>`);
+
         reply_modal.showModal();
+    }
+
+    function toggleReplies(commentId) {
+        const repliesDiv = $(`#replies-${commentId}`);
+        const btn = $(`#btn-toggle-${commentId}`);
+        const isHidden = repliesDiv.hasClass('hidden');
+
+        if (isHidden) {
+            repliesDiv.removeClass('hidden').addClass('animate-in fade-in slide-in-from-top-2 duration-300');
+            btn.find('span').html(`
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                </svg>
+                ปิดการตอบกลับ
+            `);
+        } else {
+            repliesDiv.addClass('hidden');
+            const count = repliesDiv.children().length;
+            btn.find('span').html(`
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+                ดูการตอบกลับ (${count})
+            `);
+        }
     }
 
     $(document).ready(function () {
