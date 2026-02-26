@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $content = trim($_POST['content'] ?? '');
     $user_id = $_SESSION['user_id'];
+    $status = trim($_POST['status'] ?? 'published');
     $image_name = null;
 
     if (empty($title) || empty($content)) {
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Handle Image Upload
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $upload_dir = '../asset/';
+        $upload_dir = '../asset/post/';
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
@@ -35,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $stmt = $conn->prepare("INSERT INTO posts (user_id, title, content, image) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("isss", $user_id, $title, $content, $image_name);
+    $stmt = $conn->prepare("INSERT INTO posts (user_id, title, content, image, status) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("issss", $user_id, $title, $content, $image_name, $status);
 
     if ($stmt->execute()) {
         echo json_encode(['status' => 'success', 'message' => 'สร้างกระทู้สำเร็จ!']);
